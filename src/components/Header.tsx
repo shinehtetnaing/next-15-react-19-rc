@@ -1,6 +1,7 @@
-import { HomeIcon, File, UsersRound } from "lucide-react";
+import { ModeToggle } from "@/components/ModeToggle";
+import NavButton from "@/components/NavButton";
+import { File, HomeIcon, UsersRound } from "lucide-react";
 import Link from "next/link";
-import NavButton from "./NavButton";
 
 export default function Header() {
   return (
@@ -24,6 +25,8 @@ export default function Header() {
           <NavButton href="/tickets" label="Tickets" icon={File} />
 
           <NavButton href="/customers" label="Customers" icon={UsersRound} />
+
+          <ModeToggle />
         </div>
       </div>
     </header>
