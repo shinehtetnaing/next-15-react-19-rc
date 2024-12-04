@@ -1,6 +1,7 @@
+import TicketForm from "@/app/(rs)/tickets/form/TicketForm";
+import { BackButton } from "@/components/BackButton";
 import { getCustomer } from "@/lib/queries/getCustomer";
 import { getTicket } from "@/lib/queries/getTicket";
-import { BackButton } from "@/components/BackButton";
 import * as Sentry from "@sentry/nextjs";
 
 export default async function TicketFormPage({
@@ -50,6 +51,7 @@ export default async function TicketFormPage({
 
       // return ticket form
       console.log(customer);
+      return <TicketForm customer={customer} />;
     }
 
     // Edit ticket form
@@ -70,6 +72,7 @@ export default async function TicketFormPage({
       // return ticket form
       console.log("ticket: ", ticket);
       console.log("customer: ", customer);
+      return <TicketForm customer={customer} ticket={ticket} />;
     }
   } catch (e) {
     if (e instanceof Error) {
