@@ -4,6 +4,10 @@ import { getCustomer } from "@/lib/queries/getCustomer";
 import { getTicket } from "@/lib/queries/getTicket";
 import * as Sentry from "@sentry/nextjs";
 
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+import { Users, init as kindeInit } from "@kinde/management-api-js";
+
 export default async function TicketFormPage({
   searchParams,
 }: {
@@ -22,6 +26,13 @@ export default async function TicketFormPage({
         </>
       );
     }
+
+    const { getPermission, getUser } = getKindeServerSession();
+    const [managerPermission, user] = await Promise.all([
+      getPermission("manager"),
+      getUser(),
+    ]);
+    const isManager = managerPermission?.isGranted;
 
     // New ticket form
     if (customerId) {
@@ -50,8 +61,18 @@ export default async function TicketFormPage({
       }
 
       // return ticket form
-      console.log(customer);
-      return <TicketForm customer={customer} />;
+      if (isManager) {
+        kindeInit(); // Initializes the Kinde Management API
+        const { users } = await Users.getUsers();
+
+        const techs = users
+          ? users.map((user) => ({ id: user.email!, description: user.email! }))
+          : [];
+
+        return <TicketForm customer={customer} techs={techs} />;
+      } else {
+        return <TicketForm customer={customer} />;
+      }
     }
 
     // Edit ticket form
@@ -70,9 +91,27 @@ export default async function TicketFormPage({
       const customer = await getCustomer(ticket.customerId);
 
       // return ticket form
-      console.log("ticket: ", ticket);
-      console.log("customer: ", customer);
-      return <TicketForm customer={customer} ticket={ticket} />;
+      if (isManager) {
+        kindeInit(); // Initializes the Kinde Management API
+        const { users } = await Users.getUsers();
+
+        const techs = users
+          ? users.map((user) => ({ id: user.email!, description: user.email! }))
+          : [];
+
+        return <TicketForm customer={customer} ticket={ticket} techs={techs} />;
+      } else {
+        const isEditable =
+          user.email?.toLowerCase() === ticket.tech.toLowerCase();
+
+        return (
+          <TicketForm
+            customer={customer}
+            ticket={ticket}
+            isEditable={isEditable}
+          />
+        );
+      }
     }
   } catch (e) {
     if (e instanceof Error) {
